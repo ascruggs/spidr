@@ -110,7 +110,7 @@ module Spidr
       @referer = options[:referer]
 
       @sessions = SessionCache.new(options[:proxy] || Spidr.proxy)
-      @cookies = CookieJar.new
+      @cookies = CookieJar.new(options[:cookies] || {})
       @authorized = AuthStore.new
 
       @running = false

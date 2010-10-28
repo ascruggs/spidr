@@ -15,11 +15,11 @@ module Spidr
     #
     # @since 0.2.2
     #
-    def initialize
+    def initialize(cookies = {})
       @params = {}
 
       @dirty = Set[]
-      @cookies = {}
+      @cookies = cookies
     end
 
     #
