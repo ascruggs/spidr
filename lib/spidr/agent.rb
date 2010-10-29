@@ -47,7 +47,7 @@ module Spidr
     attr_reader :queue
 
     # Cached cookies
-    attr_reader :cookies
+    attr_reader :cookie_jar
 
     #
     # Creates a new Agent object.
@@ -110,7 +110,7 @@ module Spidr
       @referer = options[:referer]
 
       @sessions = SessionCache.new(options[:proxy] || Spidr.proxy)
-      @cookies = CookieJar.new(options[:cookies] || {})
+      @cookie_jar = CookieJar.new(options[:cookie_jar] || {})
       @authorized = AuthStore.new
 
       @running = false
@@ -507,8 +507,13 @@ module Spidr
       prepare_request(url) do |session,path,headers|
         new_page = Page.new(url,session.get(path,headers))
 
-        # save any new cookies
-        @cookies.from_page(new_page)
+        # save any new cookies        
+        (new_page.response.get_fields('Set-Cookie')||[]).each do |cookie|
+          Cookie::parse(new_page.url, cookie) { |c|
+            @cookie_jar.add(new_page.url, c)
+          }
+        end
+        
 
         yield new_page if block_given?
         return new_page
@@ -543,7 +548,11 @@ module Spidr
         new_page = Page.new(url,session.post(path,post_data,headers))
 
         # save any new cookies
-        @cookies.from_page(new_page)
+        (new_page.response.get_fields('Set-Cookie')||[]).each do |cookie|
+          Cookie::parse(new_page.url, cookie) { |c|
+            @cookie_jar.add(new_page.url, c)
+          }
+        end
 
         yield new_page if block_given?
         return new_page
@@ -667,10 +676,13 @@ module Spidr
       if (authorization = @authorized.for_url(url))
         headers['Authorization'] = "Basic #{authorization}"
       end
-
-      if (header_cookies = @cookies.for_host(url.host))
-        headers['Cookie'] = header_cookies
+      
+      unless @cookie_jar.empty?(url)
+        cookies = @cookie_jar.cookies(url)
+        cookie = cookies.length > 0 ? cookies.join("; ") : nil   
+        headers['Cookie'] = cookie
       end
+      
 
       begin
         sleep(@delay) if @delay > 0
