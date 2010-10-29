@@ -1,6 +1,6 @@
 require 'yaml'
 
-class Spidr
+module Spidr
   # This class is used to manage the Cookies that have been returned from
   # any particular website.
   class CookieJar
