@@ -509,7 +509,7 @@ module Spidr
 
         # save any new cookies        
         (new_page.response.get_fields('Set-Cookie')||[]).each do |cookie|
-          Cookie::parse(new_page.url, cookie) { |c|
+          Spidr::Cookie::parse(new_page.url, cookie) { |c|
             @cookie_jar.add(new_page.url, c)
           }
         end
@@ -549,7 +549,7 @@ module Spidr
 
         # save any new cookies
         (new_page.response.get_fields('Set-Cookie')||[]).each do |cookie|
-          Cookie::parse(new_page.url, cookie) { |c|
+          Spidr::Cookie::parse(new_page.url, cookie) { |c|
             @cookie_jar.add(new_page.url, c)
           }
         end
