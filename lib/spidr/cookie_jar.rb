@@ -6,8 +6,8 @@ module Spidr
   class CookieJar
     attr_reader :jar
 
-    def initialize
-      @jar = {}
+    def initialize(jar = {})
+      @jar = jar
     end
 
     # Add a cookie to the Jar.
